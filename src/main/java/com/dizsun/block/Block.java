@@ -6,16 +6,26 @@ public class Block {
     private long timestamp;
     private String data;
     private String hash;
+    private int proof;
 
     public Block() {
     }
 
-    public Block(int index, String previousHash, long timestamp, String data, String hash) {
+//    public Block(int index, String previousHash, long timestamp, String data, String hash) {
+//        this.index = index;
+//        this.previousHash = previousHash;
+//        this.timestamp = timestamp;
+//        this.data = data;
+//        this.hash = hash;
+//    }
+
+    public Block(int index, String previousHash, long timestamp, String data, String hash, int proof) {
         this.index = index;
         this.previousHash = previousHash;
         this.timestamp = timestamp;
         this.data = data;
         this.hash = hash;
+        this.proof = proof;
     }
 
     public int getIndex() {
@@ -56,5 +66,13 @@ public class Block {
 
     public void setHash(String hash) {
         this.hash = hash;
+    }
+
+    public int getProof() {
+        return proof;
+    }
+
+    public void setProof(int proof) {
+        this.proof = proof;
     }
 }

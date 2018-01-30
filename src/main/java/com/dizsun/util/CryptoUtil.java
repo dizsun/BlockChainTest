@@ -1,4 +1,4 @@
-package com.dizsun.block;
+package com.dizsun.util;
 import java.security.MessageDigest;
 
 

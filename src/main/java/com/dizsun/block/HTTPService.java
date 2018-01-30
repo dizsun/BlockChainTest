@@ -81,7 +81,7 @@ public class HTTPService {
         }
     }
 
-
+    //TODO:这里为了测试方便直接将每次交易数据生成一个区块并广播,之后要把其改为接收交易数据,当交易量达到一定数目后再生成区块
     private class MineBlockServlet extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
