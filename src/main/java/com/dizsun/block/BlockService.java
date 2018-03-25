@@ -1,6 +1,7 @@
 package com.dizsun.block;
 
 import com.dizsun.util.CryptoUtil;
+import com.dizsun.util.SQLUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,14 +9,23 @@ import java.util.List;
 
 public class BlockService {
     private List<Block> blockChain;
-
+    private SQLUtil sqlUtil;
     public BlockService() {
+        this.sqlUtil=new SQLUtil();
         this.blockChain = new ArrayList<Block>();
-        blockChain.add(this.getFirstBlock());
+
+        List<Block> dbBlocks = sqlUtil.queryBlocks();
+        if(dbBlocks==null){
+            blockChain.add(this.getFirstBlock());
+            sqlUtil.initBlocks(blockChain);
+        }else{
+            blockChain=dbBlocks;
+        }
     }
 
     /**
      * 计算区块hash
+     * 将(索引+前一个区块hash+时间戳+数据)进行hash
      * @param index
      * @param previousHash
      * @param timestamp
@@ -52,6 +62,7 @@ public class BlockService {
 
     public void addBlock(Block newBlock) {
         if (isValidNewBlock(newBlock, getLatestBlock())) {
+            sqlUtil.addBlock(newBlock);
             blockChain.add(newBlock);
         }
     }
@@ -64,16 +75,16 @@ public class BlockService {
      */
     private boolean isValidNewBlock(Block newBlock, Block previousBlock) {
         if (previousBlock.getIndex() + 1 != newBlock.getIndex()) {
-            System.out.println("invalid index");
+            System.out.println("无效的 index");
             return false;
         } else if (!previousBlock.getHash().equals(newBlock.getPreviousHash())) {
-            System.out.println("invalid previoushash");
+            System.out.println("无效的 previoushash");
             return false;
         } else {
             String hash = calculateHash(newBlock.getIndex(), newBlock.getPreviousHash(), newBlock.getTimestamp(),
                     newBlock.getData());
             if (!hash.equals(newBlock.getHash())) {
-                System.out.println("invalid hash: " + hash + " " + newBlock.getHash());
+                System.out.println("无效的 hash: " + hash + " " + newBlock.getHash());
                 return false;
             }
             if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash()))
@@ -88,9 +99,10 @@ public class BlockService {
      */
     public void replaceChain(List<Block> newBlocks) {
         if (isValidBlocks(newBlocks) && newBlocks.size() > blockChain.size()) {
+            sqlUtil.replaceChain(newBlocks);
             blockChain = newBlocks;
         } else {
-            System.out.println("Received blockchain invalid");
+            System.out.println("收到的区块链为无效链");
         }
     }
 
@@ -117,6 +129,7 @@ public class BlockService {
 
     /**
      * 验证工作量是否正确
+     * TODO 工作量应该是有动态调节功能保证建立区块的时间稳定的,此处暂时没有写此功能
      * @param lastProof
      * @param proof
      * @param previousHash

@@ -94,7 +94,7 @@ public class HTTPService {
             String data = req.getParameter("data");
             Block newBlock = blockService.generateNextBlock(data);
             blockService.addBlock(newBlock);
-            p2pService.broatcast(p2pService.responseLatestMsg());
+            p2pService.broadcast(p2pService.responseLatestMsg());
             String s = JSON.toJSONString(newBlock);
             System.out.println("block added: " + s);
             resp.getWriter().print(s);

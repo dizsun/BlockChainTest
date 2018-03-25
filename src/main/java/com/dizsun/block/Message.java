@@ -3,7 +3,7 @@ package com.dizsun.block;
 import java.io.Serializable;
 
 /**
- * Created by sunysen on 2017/7/4.
+ * 用于在不同peer间传递消息的类(bean)
  */
 public class Message implements Serializable{
     private int    type;

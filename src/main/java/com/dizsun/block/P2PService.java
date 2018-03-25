@@ -16,9 +16,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * Created by sunysen on 2017/7/6.
- */
+
 public class P2PService {
     private List<WebSocket> sockets;
     private BlockService blockService;
@@ -60,6 +58,11 @@ public class P2PService {
         System.out.println("listening websocket p2p port on: " + port);
     }
 
+    /**
+     * 相应peer的信息请求
+     * @param webSocket
+     * @param s
+     */
     private void handleMessage(WebSocket webSocket, String s) {
         try {
             Message message = JSON.parseObject(s, Message.class);
@@ -94,10 +97,10 @@ public class P2PService {
             if (latestBlock.getHash().equals(latestBlockReceived.getPreviousHash())) {
                 System.out.println("We can append the received block to our chain");
                 blockService.addBlock(latestBlockReceived);
-                broatcast(responseLatestMsg());
+                broadcast(responseLatestMsg());
             } else if (receiveBlocks.size() == 1) {
                 System.out.println("We have to query the chain from our peer");
-                broatcast(queryAllMsg());
+                broadcast(queryAllMsg());
             } else {
                 blockService.replaceChain(receiveBlocks);
             }
@@ -144,7 +147,7 @@ public class P2PService {
         ws.send(message);
     }
 
-    public void broatcast(String message) {
+    public void broadcast(String message) {
         for (WebSocket socket : sockets) {
             this.write(socket, message);
         }
