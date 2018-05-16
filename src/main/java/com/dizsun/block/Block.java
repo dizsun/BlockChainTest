@@ -28,6 +28,26 @@ public class Block {
         this.proof = proof;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        Block block2=(Block)obj;
+        if(this.hash.equals(block2.hash))
+            return true;
+        else return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Block{" +
+                "index=" + index +
+                ", previousHash='" + previousHash + '\'' +
+                ", timestamp=" + timestamp +
+                ", data='" + data + '\'' +
+                ", hash='" + hash + '\'' +
+                ", proof=" + proof +
+                '}';
+    }
+
     public int getIndex() {
         return index;
     }

@@ -3,6 +3,7 @@ package com.dizsun.block;
 import com.dizsun.util.CryptoUtil;
 import com.dizsun.util.SQLUtil;
 
+import javax.sound.midi.Soundbank;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,8 +88,10 @@ public class BlockService {
                 System.out.println("无效的 hash: " + hash + " " + newBlock.getHash());
                 return false;
             }
-            if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash()))
+            if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash())) {
+                System.out.println("无效的证明:"+newBlock.getProof());
                 return false;
+            }
         }
         return true;
     }
@@ -118,9 +121,7 @@ public class BlockService {
         }
 
         for (int i = 1; i < newBlocks.size(); i++) {
-            if (isValidNewBlock(newBlocks.get(i), firstBlock)) {
-                firstBlock = newBlocks.get(i);
-            } else {
+            if (!isValidNewBlock(newBlocks.get(i), newBlocks.get(i-1))){
                 return false;
             }
         }
