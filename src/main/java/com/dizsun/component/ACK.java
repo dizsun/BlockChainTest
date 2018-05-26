@@ -1,10 +1,12 @@
-package com.dizsun.block;
+package com.dizsun.component;
 
 import java.io.Serializable;
 import com.alibaba.fastjson.JSON;
 
 public class ACK implements Serializable {
     private int VN;
+    private String publicKey;
+
     private String sign;
 
     public ACK() {
@@ -16,8 +18,9 @@ public class ACK implements Serializable {
     }
 
     public ACK(String jsonStr) {
-        ACK ack = (ACK) JSON.parse(jsonStr);
+        ACK ack = JSON.parseObject(jsonStr,ACK.class);
         this.VN=ack.getVN();
+        this.publicKey =ack.getPublicKey();
         this.sign=ack.getSign();
     }
 
@@ -35,5 +38,13 @@ public class ACK implements Serializable {
 
     public void setSign(String sign) {
         this.sign = sign;
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
     }
 }

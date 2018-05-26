@@ -1,9 +1,9 @@
-package com.dizsun.block;
+package com.dizsun.Service;
 
+import com.dizsun.block.Block;
 import com.dizsun.util.CryptoUtil;
 import com.dizsun.util.SQLUtil;
 
-import javax.sound.midi.Soundbank;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +11,8 @@ import java.util.List;
 public class BlockService {
     private List<Block> blockChain;
     private SQLUtil sqlUtil;
-    public BlockService() {
+    private static BlockService blockService=null;
+    private BlockService() {
         this.sqlUtil=new SQLUtil();
         this.blockChain = new ArrayList<Block>();
 
@@ -22,6 +23,12 @@ public class BlockService {
         }else{
             blockChain=dbBlocks;
         }
+    }
+    public static BlockService newBlockService(){
+        if(blockService==null){
+            blockService=new BlockService();
+        }
+        return blockService;
     }
 
     /**

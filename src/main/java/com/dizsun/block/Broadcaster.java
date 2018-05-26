@@ -25,15 +25,24 @@ public class Broadcaster {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-
-                if(dateUtil.getCurrentMinute()==0){
+                if(dateUtil.getCurrentMinute()%5==1){
+                    for (ISubscriber s : subscribers) {
+                        s.doPerHour45();
+                    }
+                }
+                else if(dateUtil.getCurrentMinute()%5==2){
+                    for (ISubscriber s : subscribers) {
+                        s.doPerHour59();
+                    }
+                }
+                else if(dateUtil.getCurrentMinute()%5==3){
                     for (ISubscriber s : subscribers) {
                         s.doPerHour00();
                     }
                 }
-                else if(dateUtil.getCurrentMinute()==45){
+                else if(dateUtil.getCurrentMinute()%5==4){
                     for (ISubscriber s : subscribers) {
-                        s.doPerHour45();
+                        s.doPerHour01();
                     }
                 }
             }
