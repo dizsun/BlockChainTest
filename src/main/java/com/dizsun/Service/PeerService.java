@@ -8,6 +8,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 管理peer节点的连接和移除及通信
@@ -66,6 +68,11 @@ public class PeerService {
      * @param host 输入的host格式示例: 192.168.1.1
      */
     public void connectToPeer(String host) {
+        if (isIP(host)) {
+            if (peers.contains(host) || host.equals(localHost))
+                return;
+            host = "http://" + host + ":6001";
+        }
         try {
             final WebSocketClient socket = new WebSocketClient(new URI(host)) {
                 @Override
@@ -109,7 +116,26 @@ public class PeerService {
         return sockets;
     }
 
-    public Object[] getPeerArray(){
+    public Object[] getPeerArray() {
         return peers.toArray();
     }
+
+    public boolean isIP(String addr) {
+        if (addr.length() < 7 || addr.length() > 15 || "".equals(addr)) {
+            return false;
+        }
+        /**
+         * 判断IP格式和范围
+         */
+        String rexp = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
+
+        Pattern pat = Pattern.compile(rexp);
+
+        Matcher mat = pat.matcher(addr);
+
+        boolean ipAddress = mat.find();
+
+        return ipAddress;
+    }
 }
+

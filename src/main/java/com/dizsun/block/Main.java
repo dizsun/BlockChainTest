@@ -11,7 +11,7 @@ public class Main {
 //    private static String Drivde = "org.sqlite.JDBC";
 
         public static void main(String[] args) {
-        if (args != null && (args.length == 2 || args.length == 3)) {
+        if (args != null && args.length == 2) {
             try {
                 Broadcaster broadcaster = new Broadcaster();
                 int httpPort = Integer.valueOf(args[0]);
@@ -21,9 +21,9 @@ public class Main {
                 P2PService p2pService = new P2PService();
                 broadcaster.subscribe(p2pService);
                 p2pService.initP2PServer(p2pPort);
-                if (args.length == 3 && args[2] != null) {
-                    p2pService.connectToPeer(args[2]);
-                }
+//                if (args.length == 3 && args[2] != null) {
+//                    p2pService.connectToPeer(args[2]);
+//                }
                 HTTPService httpService = new HTTPService(p2pService);
                 broadcaster.broadcast();
                 httpService.initHTTPServer(httpPort);
