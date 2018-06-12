@@ -4,26 +4,44 @@ import com.dizsun.util.*;
 import com.dizsun.Service.*;
 import org.java_websocket.WebSocket;
 
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.io.*;
 
 public class Main {
-//    private static String Drivde = "org.sqlite.JDBC";
-
-        public static void main(String[] args) {
+    private static String Drivder = "org.sqlite.JDBC";
+    public static void main(String[] args) {
+        File dbFileFolder = new File("./db");
+        if(!dbFileFolder.exists()){
+            System.out.println("db文件夹不存在!");
+            if(dbFileFolder.mkdir()){
+                System.out.println("db文件夹创建成功!");
+            }else {
+                System.out.println("db文件夹创建失败!");
+                return;
+            }
+        }
+        File dbFile = new File("./db/blocks.db");
+        if(!dbFile.exists()){
+            System.out.println("db文件不存在!");
+            try {
+                SQLUtil sqlUtil=new SQLUtil();
+                sqlUtil.initBlocks(null);
+                System.out.println("db文件创建成功!");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         if (args != null && args.length == 2) {
             try {
                 Broadcaster broadcaster = new Broadcaster();
                 int httpPort = Integer.valueOf(args[0]);
                 int p2pPort = Integer.valueOf(args[1]);
-//                BlockService blockService = BlockService.newBlockService();
-//                VBlockService vBlockService=VBlockService.newVBlockService();
                 P2PService p2pService = new P2PService();
                 broadcaster.subscribe(p2pService);
                 p2pService.initP2PServer(p2pPort);
-//                if (args.length == 3 && args[2] != null) {
-//                    p2pService.connectToPeer(args[2]);
-//                }
                 HTTPService httpService = new HTTPService(p2pService);
                 broadcaster.broadcast();
                 httpService.initHTTPServer(httpPort);
@@ -35,7 +53,8 @@ public class Main {
         }
     }
 //    public static void main(String[] args) {
-//
+//        DateUtil dateUtil=DateUtil.newDataUtil();
+//        System.out.println("main:"+dateUtil.getTimeFromRC());
 //    }
 
 }

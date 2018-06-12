@@ -65,6 +65,7 @@ public class VBlockService {
         if (isValidNewBlock(newBlock, getLatestBlock())) {
             blockChain.add(newBlock);
         }
+        garbageCollection();
     }
 
     /**
@@ -159,7 +160,9 @@ public class VBlockService {
 
     //TODO 垃圾回收机制,将区块个数限制在7个以内
     private void garbageCollection(){
-
+        if(this.blockChain.size()>7){
+            this.blockChain.remove(0);
+        }
     }
 
     public void rollback(){

@@ -83,10 +83,12 @@ public class SQLUtil {
                     "`data` VARCHAR(1024) NOT NULL,`hash` VARCHAR(1024) NOT NULL,`proof` INT NOT NULL)";
             statement.executeUpdate("drop table if exists blocks");//判断是否有表的存在。有则删除
             statement.executeUpdate(sql);            //创建数据库
-            Block block = blockChain.get(0);
-            String blockSQL=String.format("INSERT INTO blocks VALUES(%d,'%s',%d,'%s','%s',%d)",block.getIndex(),block.getPreviousHash()
-                    ,block.getTimestamp(),block.getData(),block.getHash(),block.getProof());
-            statement.executeUpdate(blockSQL);//向数据库中插入数据
+            if(blockChain!=null) {
+                Block block = blockChain.get(0);
+                String blockSQL = String.format("INSERT INTO blocks VALUES(%d,'%s',%d,'%s','%s',%d)", block.getIndex(), block.getPreviousHash()
+                        , block.getTimestamp(), block.getData(), block.getHash(), block.getProof());
+                statement.executeUpdate(blockSQL);//向数据库中插入数据
+            }
             connection.close();//关闭数据库连接
         } catch (Exception e) {
             e.printStackTrace();

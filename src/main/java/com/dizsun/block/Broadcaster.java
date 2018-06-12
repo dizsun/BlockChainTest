@@ -18,7 +18,7 @@ public class Broadcaster {
     public Broadcaster() {
         timer=new Timer();
         subscribers=new ArrayList<>();
-        dateUtil=new DateUtil();
+        dateUtil=DateUtil.newDataUtil();
     }
 
     public void broadcast(){

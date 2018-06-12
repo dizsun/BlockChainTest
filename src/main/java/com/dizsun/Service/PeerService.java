@@ -65,7 +65,7 @@ public class PeerService {
     /**
      * 连接peer
      *
-     * @param host 输入的host格式示例: 192.168.1.1
+     * @param host 输入的host格式示例: 192.168.1.1 或者http://192.168.1.1:6001
      */
     public void connectToPeer(String host) {
         if (isIP(host)) {
@@ -86,7 +86,7 @@ public class PeerService {
                 @Override
                 public void onMessage(String s) {
                     //handleMessage(this, s);
-                    p2PService.handleMsgThred(this, s);
+                    p2PService.handleMsgThread(this, s);
                 }
 
                 @Override

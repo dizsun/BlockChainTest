@@ -4,6 +4,7 @@ package com.dizsun.Service;
 import com.alibaba.fastjson.JSON;
 import com.dizsun.block.Block;
 import com.dizsun.component.Peer;
+import com.dizsun.util.DateUtil;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -44,6 +45,7 @@ public class HTTPService {
             context.addServlet(new ServletHolder(new MineBlockServlet()), "/mineBlock");
             context.addServlet(new ServletHolder(new PeersServlet()), "/peers");
             context.addServlet(new ServletHolder(new AddPeerServlet()), "/addPeer");
+            context.addServlet(new ServletHolder(new TimeCenterServlet()), "/setTC");
 
             server.start();
             server.join();
@@ -93,7 +95,7 @@ public class HTTPService {
             resp.setCharacterEncoding("UTF-8");
             for (WebSocket socket : peerService.getSockets()) {
                 InetSocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
-                resp.getWriter().print(remoteSocketAddress.getHostName() + ":" + remoteSocketAddress.getPort()+"</br>");
+                resp.getWriter().print(remoteSocketAddress.getHostName() + ":" + remoteSocketAddress.getPort());
             }
         }
     }
@@ -115,6 +117,21 @@ public class HTTPService {
             String s = JSON.toJSONString(newBlock);
             System.out.println("block added: " + s);
             resp.getWriter().print(s);
+        }
+    }
+
+    private class TimeCenterServlet extends HttpServlet{
+        @Override
+        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            this.doPost(req,resp);
+        }
+
+        @Override
+        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+            resp.setCharacterEncoding("UTF-8");
+            String host = req.getParameter("host");
+            DateUtil dateUtil=DateUtil.newDataUtil();
+            dateUtil.setHost(host);
         }
     }
 }

@@ -6,6 +6,7 @@ import com.dizsun.block.*;
 import com.dizsun.component.ACK;
 import com.dizsun.component.VACK;
 import com.dizsun.component.VBlock;
+import com.dizsun.util.DateUtil;
 import com.dizsun.util.ISubscriber;
 import com.dizsun.util.RSAUtil;
 import org.java_websocket.WebSocket;
@@ -31,6 +32,7 @@ public class P2PService implements ISubscriber {
     private final Object peerLock = new Object();  //写peer的线程锁
     private RSAUtil rsaUtill;
     private PeerService peerService;
+    private DateUtil dateUtil;
 
     private final static int QUERY_LATEST_BLOCK = 0;
     private final static int QUERY_ALL_BLOCKS = 1;
@@ -52,9 +54,9 @@ public class P2PService implements ISubscriber {
         WaitingACK,     //等待其他节点协商同意
         WaitingVACK,     //等待其他节点协商同意
         Running,    //系统正常运行状态
-        WritingBlock,
-        WaitingBlock,
-        WritingVBlock
+        WritingBlock,   //写区块
+        WaitingBlock,   //等待区块
+        WritingVBlock   //写虚区块
     }
 
     public static final int LT = 1000 * 60 * 60;
@@ -79,6 +81,7 @@ public class P2PService implements ISubscriber {
         this.vacks = new ArrayList<>();
         this.VN = 0;
         this.rsaUtill = RSAUtil.getInstance();
+        this.dateUtil=DateUtil.newDataUtil();
         this.vBlockService = VBlockService.newVBlockService();
         this.peerService = PeerService.newPeerService(this);
     }
@@ -268,6 +271,9 @@ public class P2PService implements ISubscriber {
         }
     }
 
+    /**
+     * 停止写虚区块,若是已经计算完毕则回滚
+     */
     private void stopWriteVBlock() {
         synchronized (vBlockLock) {
             if (viewState == ViewState.WritingVBlock) {
@@ -280,7 +286,7 @@ public class P2PService implements ISubscriber {
     }
 
     private void writeBlock() {
-        blockService.addBlock(blockService.generateNextBlock(getTimeFromTC()));
+        blockService.addBlock(blockService.generateNextBlock(dateUtil.getTimeFromRC()));
     }
 
     //TODO 写入虚区块,要验证合法性,即区块必须包含所有同意的ACK
@@ -293,9 +299,6 @@ public class P2PService implements ISubscriber {
         }
     }
 
-    private String getTimeFromTC() {
-        return "time0000" + (VN + 1);
-    }
 
     /**
      * 处理接收到的区块链
@@ -373,7 +376,7 @@ public class P2PService implements ISubscriber {
         }
     }
 
-    public void handleMsgThred(WebSocket webSocket, String msg) {
+    public void handleMsgThread(WebSocket webSocket, String msg) {
         Thread thread = new HandleMsgThread(webSocket, msg);
         pool.execute(thread);
     }
@@ -497,14 +500,6 @@ public class P2PService implements ISubscriber {
     @Override
     public void doPerHour01() {
         System.out.println("进入01,此时VN=" + VN);
-//        switch (this.viewState) {
-//            case WatingNegotiation:
-////                this.viewState=ViewState.Running;
-////                break;
-//            case WaitingACK:
-//                this.viewState = ViewState.Running;
-//                break;
-//        }
         this.viewState = ViewState.Running;
         VN++;
         acks.clear();
