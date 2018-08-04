@@ -16,44 +16,76 @@ public class Broadcaster {
     private DateUtil dateUtil;
 
     public Broadcaster() {
-        timer=new Timer();
-        subscribers=new ArrayList<>();
-        dateUtil=DateUtil.newDataUtil();
+        timer = new Timer();
+        subscribers = new ArrayList<>();
+        dateUtil = DateUtil.newDataUtil();
     }
 
-    public void broadcast(){
+    public void broadcast() {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if(dateUtil.getCurrentMinute()%5==1){
-                    for (ISubscriber s : subscribers) {
-                        s.doPerHour45();
-                    }
-                }
-                else if(dateUtil.getCurrentMinute()%5==2){
-                    for (ISubscriber s : subscribers) {
-                        s.doPerHour59();
-                    }
-                }
-                else if(dateUtil.getCurrentMinute()%5==3){
-                    for (ISubscriber s : subscribers) {
-                        s.doPerHour00();
-                    }
-                }
-                else if(dateUtil.getCurrentMinute()%5==4){
-                    for (ISubscriber s : subscribers) {
-                        s.doPerHour01();
-                    }
+//                if(dateUtil.getCurrentMinute()%5==1){
+//                    for (ISubscriber s : subscribers) {
+//                        s.doPerHour45();
+//                    }
+//                }
+//                else if(dateUtil.getCurrentMinute()%5==2){
+//                    for (ISubscriber s : subscribers) {
+//                        s.doPerHour59();
+//                    }
+//                }
+//                else if(dateUtil.getCurrentMinute()%5==3){
+//                    for (ISubscriber s : subscribers) {
+//                        s.doPerHour00();
+//                    }
+//                }
+//                else if(dateUtil.getCurrentMinute()%5==4){
+//                    for (ISubscriber s : subscribers) {
+//                        s.doPerHour01();
+//                    }
+//                }
+                switch (dateUtil.getCurrentSecond()) {
+                    case 0:
+                    case 20:
+                    case 40:
+                        for (ISubscriber s : subscribers) {
+                            s.doPerHour00();
+                        }
+                        break;
+                    case 5:
+                    case 25:
+                    case 45:
+                        for (ISubscriber s : subscribers) {
+                            s.doPerHour01();
+                        }
+                        break;
+                    case 10:
+                    case 30:
+                    case 50:
+                        for (ISubscriber s : subscribers) {
+                            s.doPerHour45();
+                        }
+                        break;
+                    case 15:
+                    case 35:
+                    case 55:
+                        for (ISubscriber s : subscribers) {
+                            s.doPerHour59();
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
-        },1,1000*60);
+        }, 1, 1000);
     }
 
-    public void subscribe(ISubscriber subscriber){
+    public void subscribe(ISubscriber subscriber) {
         subscribers.add(subscriber);
     }
 
-    public void unSubscribe(ISubscriber subscriber){
+    public void unSubscribe(ISubscriber subscriber) {
         subscribers.remove(subscriber);
     }
 
