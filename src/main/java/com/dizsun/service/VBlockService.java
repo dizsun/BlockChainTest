@@ -1,34 +1,26 @@
-package com.dizsun.Service;
+package com.dizsun.service;
 
-import com.dizsun.block.Block;
+import com.alibaba.fastjson.JSON;
+import com.dizsun.component.ACK;
+import com.dizsun.component.VBlock;
 import com.dizsun.util.CryptoUtil;
-import com.dizsun.util.SQLUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class BlockService {
-    private List<Block> blockChain;
-    private SQLUtil sqlUtil;
-    private static BlockService blockService=null;
-    private BlockService() {
-        this.sqlUtil=new SQLUtil();
-        this.blockChain = new ArrayList<Block>();
-
-        List<Block> dbBlocks = sqlUtil.queryBlocks();
-        if(dbBlocks==null){
-            blockChain.add(this.getFirstBlock());
-            sqlUtil.initBlocks(blockChain);
-        }else{
-            blockChain=dbBlocks;
-        }
+public class VBlockService {
+    private List<VBlock> blockChain;
+    private static VBlockService vBlockService;
+    private VBlockService() {
+        this.blockChain = new ArrayList<>();
+        this.blockChain.add(this.getFirstBlock());
     }
-    public static BlockService newBlockService(){
-        if(blockService==null){
-            blockService=new BlockService();
+
+    public static VBlockService newVBlockService(){
+        if(vBlockService==null){
+            vBlockService=new VBlockService();
         }
-        return blockService;
+        return vBlockService;
     }
 
     /**
@@ -46,12 +38,12 @@ public class BlockService {
         return CryptoUtil.getSHA256(builder.toString());
     }
 
-    public Block getLatestBlock() {
+    public VBlock getLatestBlock() {
         return blockChain.get(blockChain.size() - 1);
     }
 
-    private Block getFirstBlock() {
-        return new Block(1, "0", 0, "Hello Block", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a",100);
+    private VBlock getFirstBlock() {
+        return new VBlock(1, "0", 0,0, "Hello VBlock", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a",100);
     }
 
     /**
@@ -59,20 +51,20 @@ public class BlockService {
      * @param blockData
      * @return
      */
-    public Block generateNextBlock(String blockData) {
-        Block previousBlock = this.getLatestBlock();
+    public VBlock generateNextBlock(int viewNumber,String blockData) {
+        VBlock previousBlock = this.getLatestBlock();
         int nextIndex = previousBlock.getIndex() + 1;
         long nextTimestamp = System.currentTimeMillis();
         String nextHash = calculateHash(nextIndex, previousBlock.getHash(), nextTimestamp, blockData);
         int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
-        return new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash,proof);
+        return new VBlock(nextIndex, previousBlock.getHash(), nextTimestamp,viewNumber, blockData, nextHash,proof);
     }
 
-    public void addBlock(Block newBlock) {
+    public void addBlock(VBlock newBlock) {
         if (isValidNewBlock(newBlock, getLatestBlock())) {
-            sqlUtil.addBlock(newBlock);
             blockChain.add(newBlock);
         }
+        garbageCollection();
     }
 
     /**
@@ -81,22 +73,22 @@ public class BlockService {
      * @param previousBlock
      * @return
      */
-    private boolean isValidNewBlock(Block newBlock, Block previousBlock) {
+    private boolean isValidNewBlock(VBlock newBlock, VBlock previousBlock) {
         if (previousBlock.getIndex() + 1 != newBlock.getIndex()) {
-            System.out.println("无效的 index");
+            System.out.println("无效的 index of vBlock");
             return false;
         } else if (!previousBlock.getHash().equals(newBlock.getPreviousHash())) {
-            System.out.println("无效的 previoushash");
+            System.out.println("无效的 previoushash of vBlock");
             return false;
         } else {
             String hash = calculateHash(newBlock.getIndex(), newBlock.getPreviousHash(), newBlock.getTimestamp(),
                     newBlock.getData());
             if (!hash.equals(newBlock.getHash())) {
-                System.out.println("无效的 hash: " + hash + " " + newBlock.getHash());
+                System.out.println("无效的 hash: " + hash + " " + newBlock.getHash() + "of vBlock");
                 return false;
             }
             if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash())) {
-                System.out.println("无效的证明:"+newBlock.getProof());
+                System.out.println("无效的证明:"+newBlock.getProof() + "of vBlock");
                 return false;
             }
         }
@@ -105,11 +97,10 @@ public class BlockService {
 
     /**
      * 用新链替换旧链
-     * @param newBlocks
+     * @param newBlocks 新的vBlock链
      */
-    public void replaceChain(List<Block> newBlocks) {
+    public void replaceChain(List<VBlock> newBlocks) {
         if (isValidBlocks(newBlocks) && newBlocks.size() > blockChain.size()) {
-            sqlUtil.replaceChain(newBlocks);
             blockChain = newBlocks;
         } else {
             System.out.println("收到的区块链为无效链");
@@ -121,8 +112,8 @@ public class BlockService {
      * @param newBlocks
      * @return
      */
-    private boolean isValidBlocks(List<Block> newBlocks) {
-        Block firstBlock = newBlocks.get(0);
+    private boolean isValidBlocks(List<VBlock> newBlocks) {
+        VBlock firstBlock = newBlocks.get(0);
         if (!firstBlock.equals(getFirstBlock())) {
             return false;
         }
@@ -162,7 +153,24 @@ public class BlockService {
         return proof;
     }
 
-    public List<Block> getBlockChain() {
+    public List<VBlock> getBlockChain() {
         return blockChain;
+    }
+
+    //TODO 垃圾回收机制,将区块个数限制在7个以内
+    private void garbageCollection(){
+        if(this.blockChain.size()>7){
+            this.blockChain.remove(0);
+        }
+    }
+
+    public void rollback(){
+        if(this.blockChain.size()>0){
+            this.blockChain.remove(this.blockChain.size()-1);
+        }
+    }
+
+    public String getJSONData(List<ACK> acks){
+        return JSON.toJSONString(acks);
     }
 }

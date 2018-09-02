@@ -1,4 +1,4 @@
-package com.dizsun.Service;
+package com.dizsun.service;
 
 
 import com.alibaba.fastjson.JSON;
@@ -20,6 +20,8 @@ import java.util.concurrent.Executors;
 
 
 public class P2PService implements ISubscriber {
+    private long startTime = 0;
+    private long endTime = 0;
     //    private List<WebSocket> sockets;    //节点的套接字集合
 //    private HashSet<String> peers;  //节点的URI集合
     private BlockService blockService;
@@ -64,7 +66,7 @@ public class P2PService implements ISubscriber {
     private int VN;
     //节点数3N+0,1,2
     private int N = 1;
-//    private int NCounter = 1;
+    //    private int NCounter = 1;
 //    private int VCounter = 1;
     private ViewState viewState = ViewState.Running;
     //    private List<Block> vBlocks;
@@ -81,7 +83,7 @@ public class P2PService implements ISubscriber {
         this.vacks = new ArrayList<>();
         this.VN = 0;
         this.rsaUtill = RSAUtil.getInstance();
-        this.dateUtil=DateUtil.newDataUtil();
+        this.dateUtil = DateUtil.newDataUtil();
         this.vBlockService = VBlockService.newVBlockService();
         this.peerService = PeerService.newPeerService(this);
     }
@@ -173,9 +175,10 @@ public class P2PService implements ISubscriber {
                     break;
                 case REQUEST_NEGOTIATION:
                     System.out.println("收到协商请求...");
-                    N = (peerService.length()+1) / 3;
+                    N = (peerService.length() + 1) / 3;
                     System.out.println("N的大小:" + N);
                     if (viewState == ViewState.WatingNegotiation) {
+                        startTime = System.nanoTime();
                         System.out.println("广播ACK");
                         peerService.broadcast(responseACK());
                         viewState = ViewState.WaitingACK;
@@ -188,7 +191,7 @@ public class P2PService implements ISubscriber {
                     synchronized (ackLock) {
                         if (viewState == ViewState.WaitingACK && checkACK(tempACK)) {
                             acks.add(tempACK);
-                            System.out.println("接收到的ACK数:" + acks.size()+",是否满足写虚区块条件:"+(acks.size() >= 2 * N));
+                            System.out.println("接收到的ACK数:" + acks.size() + ",是否满足写虚区块条件:" + (acks.size() >= 2 * N));
                             if (acks.size() >= 2 * N) {
                                 viewState = ViewState.WritingVBlock;
                                 System.out.println("写虚区块");
@@ -240,6 +243,8 @@ public class P2PService implements ISubscriber {
                                 System.out.println("广播区块");
                                 peerService.broadcast(responseBlock());
                                 viewState = ViewState.Running;
+                                endTime = System.nanoTime() - startTime;
+                                System.out.println("Consensus duration:" + endTime);
                             }
                         }
                     }
@@ -260,6 +265,8 @@ public class P2PService implements ISubscriber {
                                 handleBlockChainResponse(message.getData());
                             }
                             viewState = ViewState.Running;
+                            endTime = System.nanoTime() - startTime;
+                            System.out.println("Consensus duration:" + endTime);
                             break;
 
                     }
@@ -475,7 +482,8 @@ public class P2PService implements ISubscriber {
         System.out.println("进入00,此时VN=" + VN);
         switch (this.viewState) {
             case WatingNegotiation:
-                N = (peerService.length()+1) / 3;
+                startTime = System.nanoTime();
+                N = (peerService.length() + 1) / 3;
                 this.viewState = ViewState.WaitingACK;
                 peerService.broadcast(requestNagotiation());
                 break;
@@ -492,8 +500,8 @@ public class P2PService implements ISubscriber {
 
     @Override
     public void doPerHour59() {
-        N = (peerService.length()+1) / 3;
-        System.out.println("进入59,此时VN=" + VN+",N="+N);
+        N = (peerService.length() + 1) / 3;
+        System.out.println("进入59,此时VN=" + VN + ",N=" + N);
         this.viewState = ViewState.WatingNegotiation;
     }
 
@@ -504,6 +512,8 @@ public class P2PService implements ISubscriber {
         VN++;
         acks.clear();
         vacks.clear();
+        startTime = 0;
+        endTime = 0;
     }
 
     class HandleMsgThread extends Thread {

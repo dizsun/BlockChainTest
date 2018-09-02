@@ -1,4 +1,4 @@
-package com.dizsun.Service;
+package com.dizsun.service;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
