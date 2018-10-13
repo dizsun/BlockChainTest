@@ -130,81 +130,78 @@ public class P2PService implements ISubscriber {
             System.out.println("Received message" + JSON.toJSONString(message));
             switch (message.getType()) {
                 case QUERY_LATEST_BLOCK:
-                    System.out.println("对方请求最新block...");
+//                    System.out.println("对方请求最新block...");
                     peerService.write(webSocket, responseLatestMsg());
                     break;
                 case QUERY_ALL_BLOCKS:
-                    System.out.println("对方请求所以block...");
+//                    System.out.println("对方请求所以block...");
                     peerService.write(webSocket, responseChainMsg());
                     synchronized (blockLock) {
                         handleBlockChainResponse(message.getData());
                     }
                     break;
                 case QUERY_ALL_VBLOCKS:
-                    System.out.println("对方请求所有vblock...");
+//                    System.out.println("对方请求所有vblock...");
                     peerService.write(webSocket, responseVChainMsg());
                     synchronized (vBlockLock) {
                         handleVBlockChainResponse(message.getData());
                     }
-                    System.out.println("VChain length:" + vBlockService.getBlockChain().size());
+//                    System.out.println("VChain length:" + vBlockService.getBlockChain().size());
                     break;
                 case QUERY_ALL_PEERS:
-                    System.out.println("对方请求所有peer...");
+//                    System.out.println("对方请求所有peer...");
                     peerService.write(webSocket, responseAllPeers());
                     synchronized (peerLock) {
                         handlePeersResponse(message.getData());
                     }
                     break;
                 case RESPONSE_BLOCKCHAIN:
-                    System.out.println("收到blocks...");
+//                    System.out.println("收到blocks...");
                     synchronized (blockLock) {
                         handleBlockChainResponse(message.getData());
                     }
                     break;
                 case RESPONSE_VBLOCKCHAIN:
-                    System.out.println("收到vblocks...");
+//                    System.out.println("收到vblocks...");
                     synchronized (vBlockLock) {
                         handleVBlockChainResponse(message.getData());
                     }
                     break;
                 case RESPONSE_ALL_PEERS:
-                    System.out.println("收到所有peer...");
+//                    System.out.println("收到所有peer...");
                     synchronized (peerLock) {
                         handlePeersResponse(message.getData());
                     }
                     break;
                 case REQUEST_NEGOTIATION:
-                    System.out.println("收到协商请求...");
+//                    System.out.println("收到协商请求...");
                     N = (peerService.length() + 1) / 3;
-                    System.out.println("N的大小:" + N);
+//                    System.out.println("N的大小:" + N);
                     if (viewState == ViewState.WatingNegotiation) {
                         startTime = System.nanoTime();
-                        System.out.println("广播ACK");
+//                        System.out.println("广播ACK");
                         peerService.broadcast(responseACK());
                         viewState = ViewState.WaitingACK;
                     }
                     break;
                 case RESPONSE_ACK:
-                    System.out.println("收到ACK...");
+//                    System.out.println("收到ACK...");
                     ACK tempACK = new ACK(message.getData());
-                    System.out.println("ACK正确性:" + checkACK(tempACK));
+//                    System.out.println("ACK正确性:" + checkACK(tempACK));
                     synchronized (ackLock) {
                         if (viewState == ViewState.WaitingACK && checkACK(tempACK)) {
                             acks.add(tempACK);
-                            System.out.println("接收到的ACK数:" + acks.size() + ",是否满足写虚区块条件:" + (acks.size() >= 2 * N));
+//                            System.out.println("接收到的ACK数:" + acks.size() + ",是否满足写虚区块条件:" + (acks.size() >= 2 * N));
                             if (acks.size() >= 2 * N) {
                                 viewState = ViewState.WritingVBlock;
-                                System.out.println("写虚区块");
                                 writeVBlock();
                                 viewState = ViewState.WaitingVACK;
-                                System.out.println("广播虚区块");
                                 peerService.broadcast(responseVBlock());
                             }
                         }
                     }
                     break;
                 case RESPONSE_VBLOCK:
-                    System.out.println("收到vblocks...");
                     switch (viewState) {
                         case Running:
                         case WaitingVACK:
@@ -215,42 +212,33 @@ public class P2PService implements ISubscriber {
                         case WaitingACK:
                         case Negotiation:
                         case WatingNegotiation:
-                            System.out.println("停止写虚区块");
                             stopWriteVBlock();
                             synchronized (vBlockLock) {
                                 handleVBlockChainResponse(message.getData());
                             }
                             viewState = ViewState.WaitingBlock;
-                            System.out.println("回复VACK");
                             peerService.write(webSocket, responseVACK());
                             break;
 
                     }
                     break;
                 case RESPONSE_VACK:
-                    System.out.println("收到VACK...");
                     VACK tempVACK = new VACK(message.getData());
-                    System.out.println("VACK正确性:" + checkACK(tempVACK));
                     synchronized (vackLock) {
                         if (viewState == ViewState.WaitingVACK && checkACK(tempVACK)) {
                             vacks.add(tempVACK);
-                            System.out.println("接收到的vack数:" + vacks.size());
-                            System.out.println("vack判定:" + (vacks.size() >= 2 * N));
                             if (vacks.size() >= 2 * N) {
                                 viewState = ViewState.WritingBlock;
-                                System.out.println("写区块");
                                 writeBlock();
-                                System.out.println("广播区块");
                                 peerService.broadcast(responseBlock());
                                 viewState = ViewState.Running;
                                 endTime = System.nanoTime() - startTime;
-                                System.out.println("Consensus duration:" + endTime);
+                                System.out.println("Consensus duration:" + endTime / 1000000000.0 + "s");
                             }
                         }
                     }
                     break;
                 case RESPONSE_BLOCK:
-                    System.out.println("收到区块");
                     switch (viewState) {
                         case Running:
                             break;
@@ -266,7 +254,7 @@ public class P2PService implements ISubscriber {
                             }
                             viewState = ViewState.Running;
                             endTime = System.nanoTime() - startTime;
-                            System.out.println("Consensus duration:" + endTime);
+                            System.out.println("Consensus duration:" + endTime / 1000000000.0 + "s");
                             break;
 
                     }
@@ -389,7 +377,7 @@ public class P2PService implements ISubscriber {
     }
 
     private boolean checkACK(ACK ack) {
-        System.out.println("ack检测一:" + ack.getVN() + "," + this.VN);
+//        System.out.println("ack检测一:" + ack.getVN() + "," + this.VN);
         if (ack.getVN() != this.VN) {
             return false;
         }
@@ -400,7 +388,7 @@ public class P2PService implements ISubscriber {
     }
 
     private boolean checkACK(VACK ack) {
-        System.out.println("vack检测一:" + ack.getVN() + "," + this.VN);
+//        System.out.println("vack检测一:" + ack.getVN() + "," + this.VN);
         if (ack.getVN() != this.VN)
             return false;
         String sign = rsaUtill.decrypt(ack.getPublicKey(), ack.getSign());
@@ -479,7 +467,7 @@ public class P2PService implements ISubscriber {
 
     @Override
     public void doPerHour00() {
-        System.out.println("进入00,此时VN=" + VN);
+//        System.out.println("进入00,此时VN=" + VN);
         switch (this.viewState) {
             case WatingNegotiation:
                 startTime = System.nanoTime();
@@ -494,20 +482,20 @@ public class P2PService implements ISubscriber {
 
     @Override
     public void doPerHour45() {
-        System.out.println("进入45,此时VN=" + VN);
+//        System.out.println("进入45,此时VN=" + VN);
         peerService.broadcast(queryAllPeers());
     }
 
     @Override
     public void doPerHour59() {
         N = (peerService.length() + 1) / 3;
-        System.out.println("进入59,此时VN=" + VN + ",N=" + N);
+//        System.out.println("进入59,此时VN=" + VN + ",N=" + N);
         this.viewState = ViewState.WatingNegotiation;
     }
 
     @Override
     public void doPerHour01() {
-        System.out.println("进入01,此时VN=" + VN);
+//        System.out.println("进入01,此时VN=" + VN);
         this.viewState = ViewState.Running;
         VN++;
         acks.clear();

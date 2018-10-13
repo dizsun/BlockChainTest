@@ -27,6 +27,14 @@ public class Block {
         this.hash = hash;
         this.proof = proof;
     }
+    public Block(int index, String previousHash, long timestamp, String data, String hash) {
+        this.index = index;
+        this.previousHash = previousHash;
+        this.timestamp = timestamp;
+        this.data = data;
+        this.hash = hash;
+        this.proof=0;
+    }
 
     @Override
     public boolean equals(Object obj) {

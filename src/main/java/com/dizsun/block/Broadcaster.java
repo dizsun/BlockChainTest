@@ -45,7 +45,7 @@ public class Broadcaster {
 //                        s.doPerHour01();
 //                    }
 //                }
-                switch (dateUtil.getCurrentSecond()) {
+                switch (dateUtil.getCurrentMinute()) {
                     case 0:
                     case 20:
                     case 40:
@@ -78,7 +78,7 @@ public class Broadcaster {
                         break;
                 }
             }
-        }, 1, 1000);
+        }, 1, 60*1000);
     }
 
     public void subscribe(ISubscriber subscriber) {

@@ -64,8 +64,8 @@ public class BlockService {
         int nextIndex = previousBlock.getIndex() + 1;
         long nextTimestamp = System.currentTimeMillis();
         String nextHash = calculateHash(nextIndex, previousBlock.getHash(), nextTimestamp, blockData);
-        int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
-        return new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash,proof);
+        //int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
+        return new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash);
     }
 
     public void addBlock(Block newBlock) {
