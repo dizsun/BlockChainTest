@@ -1,4 +1,4 @@
-package com.dizsun.block;
+package com.dizsun.component;
 
 public class Block {
     private int index;

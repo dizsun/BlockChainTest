@@ -20,7 +20,6 @@
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-io:9.4.8.v20171121" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-servlet:9.4.8.v20171121" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty:jetty-security:9.4.8.v20171121" level="project" />
-    <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.8.11.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven.plugins:maven-assembly-plugin:2.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven:maven-plugin-api:2.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven:maven-core:2.2.1" level="project" />
@@ -81,5 +80,6 @@
     <orderEntry type="library" name="Maven: org.codehaus.plexus:plexus-utils:3.0.21" level="project" />
     <orderEntry type="library" name="Maven: org.apache.maven.shared:maven-repository-builder:1.0" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
+    <orderEntry type="library" name="Maven: org.xerial:sqlite-jdbc:3.8.11.2" level="project" />
   </component>
 </module>

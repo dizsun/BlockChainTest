@@ -1,12 +1,20 @@
 package com.dizsun.service;
 
+import com.dizsun.component.Peer;
+import com.dizsun.util.ICheckDelay;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,16 +22,18 @@ import java.util.regex.Pattern;
 /**
  * 管理peer节点的连接和移除及通信
  */
-public class PeerService {
-    private HashSet<String> peers;
-    private ArrayList<WebSocket> sockets;
+public class PeerService implements ICheckDelay{
+    private ArrayList<Peer> peers;
+    //    private HashSet<String> peers;
+//    private ArrayList<WebSocket> sockets;
     private static PeerService peerService;
     private String localHost;
     private P2PService p2PService;
 
     private PeerService(P2PService _p2PService) {
-        peers = new HashSet<>();
-        sockets = new ArrayList<>();
+//        peers = new HashSet<>();
+//        sockets = new ArrayList<>();
+        peers = new ArrayList<>();
         this.p2PService = _p2PService;
     }
 
@@ -37,29 +47,39 @@ public class PeerService {
     public void addPeer(WebSocket webSocket) {
         String host = webSocket.getRemoteSocketAddress().getHostString();
         localHost = webSocket.getLocalSocketAddress().getHostString();
-        if (!peers.contains(host) && !host.equals(localHost)) {
-            peers.add(webSocket.getRemoteSocketAddress().getHostString());
-            sockets.add(webSocket);
+        if (!contains(host) && !host.equals(localHost)) {
+            Peer p = new Peer();
+            p.setWebSocket(webSocket);
+            p.setIp(host);
+            peers.add(p);
         }
     }
 
     public void removePeer(WebSocket webSocket) {
-        peers.remove(webSocket.getRemoteSocketAddress().getHostString());
-        sockets.remove(webSocket);
+        if (webSocket != null) {
+            for (int i = 0; i < peers.size(); i++) {
+                if (peers.get(i).getWebSocket().equals(webSocket))
+                    peers.remove(i);
+            }
+        }
     }
 
     public void write(WebSocket webSocket, String msg) {
-        webSocket.send(msg);
+        if (webSocket != null)
+            webSocket.send(msg);
     }
 
     public void broadcast(String msg) {
-        for (WebSocket ws : sockets) {
-            this.write(ws, msg);
+        for (Peer peer : peers) {
+            this.write(peer.getWebSocket(), msg);
         }
     }
 
     public boolean contains(String host) {
-        return peers.contains(host);
+        for (int i = 0; i < peers.size(); i++) {
+            if (peers.get(i).getIp().equals(host)) return true;
+        }
+        return false;
     }
 
     /**
@@ -112,12 +132,22 @@ public class PeerService {
         return peers.size();
     }
 
-    public ArrayList<WebSocket> getSockets() {
-        return sockets;
-    }
+//    public ArrayList<WebSocket> getSockets() {
+//        return sockets;
+//    }
 
     public Object[] getPeerArray() {
-        return peers.toArray();
+        ArrayList<String> ips = new ArrayList<>();
+        peers.sort(new Comparator<Peer>() {
+            @Override
+            public int compare(Peer o1, Peer o2) {
+                return o2.getStability()-o1.getStability();
+            }
+        });
+        for (Peer peer: peers){
+            ips.add(peer.getIp());
+        }
+        return ips.toArray();
     }
 
     public boolean isIP(String addr) {
@@ -137,5 +167,66 @@ public class PeerService {
 
         return ipAddress;
     }
+
+    public void updateSI(WebSocket webSocket,int _stability){
+        for (int i = 0; i < peers.size(); i++) {
+            if(peers.get(i).getWebSocket().equals(webSocket)){
+                peers.get(i).addStability(_stability);
+                break;
+            }
+        }
+    }
+
+    public void updateDelay(){
+        for (Peer peer:peers){
+            new DelayHandler(this,peer).start();
+        }
+    }
+
+    @Override
+    public void checkDelay(Peer peer,double delay) {
+        for (int i = 0; i < peers.size(); i++) {
+            if(peer.getIp().equals(peers.get(i).getIp())){
+                peers.get(i).setDelay(delay);
+            }
+        }
+    }
+
+    private class DelayHandler extends Thread{
+        private ICheckDelay context;
+        private Peer peer;
+        private long t1;
+        private long t2;
+        private double delay;
+
+        public DelayHandler(ICheckDelay context, Peer peer) {
+            this.context = context;
+            this.peer = peer;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Socket client = new Socket(InetAddress.getByName(peer.getIp()),9500);
+                DataOutputStream dos = new DataOutputStream(client.getOutputStream());
+                DataInputStream dis = new DataInputStream(client.getInputStream());
+                dos.writeBoolean(true);
+                t1=System.currentTimeMillis();
+                dos.flush();
+                if(dis.readBoolean()){
+                    t2=System.currentTimeMillis();
+                }
+                delay=(t2-t1)/2.0;
+                context.checkDelay(peer,delay);
+                dis.close();
+                dos.close();
+                client.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
 }
 

@@ -1,8 +1,8 @@
 package com.dizsun.service;
 
-import com.dizsun.block.Block;
+import com.dizsun.component.Block;
 import com.dizsun.util.CryptoUtil;
-import com.dizsun.util.SQLUtil;
+//import com.dizsun.util.SQLUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,16 +10,17 @@ import java.util.List;
 
 public class BlockService {
     private List<Block> blockChain;
-    private SQLUtil sqlUtil;
+//    private SQLUtil sqlUtil;
     private static BlockService blockService=null;
     private BlockService() {
-        this.sqlUtil=new SQLUtil();
+//        this.sqlUtil=new SQLUtil();
         this.blockChain = new ArrayList<Block>();
 
-        List<Block> dbBlocks = sqlUtil.queryBlocks();
+//        List<Block> dbBlocks = sqlUtil.queryBlocks();
+        List<Block> dbBlocks = new ArrayList<>();
         if(dbBlocks==null){
             blockChain.add(this.getFirstBlock());
-            sqlUtil.initBlocks(blockChain);
+//            sqlUtil.initBlocks(blockChain);
         }else{
             blockChain=dbBlocks;
         }
@@ -70,7 +71,7 @@ public class BlockService {
 
     public void addBlock(Block newBlock) {
         if (isValidNewBlock(newBlock, getLatestBlock())) {
-            sqlUtil.addBlock(newBlock);
+//            sqlUtil.addBlock(newBlock);
             blockChain.add(newBlock);
         }
     }
@@ -109,7 +110,7 @@ public class BlockService {
      */
     public void replaceChain(List<Block> newBlocks) {
         if (isValidBlocks(newBlocks) && newBlocks.size() > blockChain.size()) {
-            sqlUtil.replaceChain(newBlocks);
+//            sqlUtil.replaceChain(newBlocks);
             blockChain = newBlocks;
         } else {
             System.out.println("收到的区块链为无效链");

@@ -2,10 +2,7 @@ package com.dizsun.service;
 
 
 import com.alibaba.fastjson.JSON;
-import com.dizsun.block.*;
-import com.dizsun.component.ACK;
-import com.dizsun.component.VACK;
-import com.dizsun.component.VBlock;
+import com.dizsun.component.*;
 import com.dizsun.util.DateUtil;
 import com.dizsun.util.ISubscriber;
 import com.dizsun.util.RSAUtil;
@@ -68,6 +65,7 @@ public class P2PService implements ISubscriber {
     private int N = 1;
     //    private int NCounter = 1;
 //    private int VCounter = 1;
+    private int stabilityValue = 128;
     private ViewState viewState = ViewState.Running;
     //    private List<Block> vBlocks;
     private List<ACK> acks;
@@ -190,6 +188,12 @@ public class P2PService implements ISubscriber {
 //                    System.out.println("ACK正确性:" + checkACK(tempACK));
                     synchronized (ackLock) {
                         if (viewState == ViewState.WaitingACK && checkACK(tempACK)) {
+                            if (stabilityValue == 1) {
+                                peerService.updateSI(webSocket, 1);
+                            } else {
+                                peerService.updateSI(webSocket, stabilityValue / 2);
+                                stabilityValue /= 2;
+                            }
                             acks.add(tempACK);
 //                            System.out.println("接收到的ACK数:" + acks.size() + ",是否满足写虚区块条件:" + (acks.size() >= 2 * N));
                             if (acks.size() >= 2 * N) {
@@ -226,6 +230,12 @@ public class P2PService implements ISubscriber {
                     VACK tempVACK = new VACK(message.getData());
                     synchronized (vackLock) {
                         if (viewState == ViewState.WaitingVACK && checkACK(tempVACK)) {
+                            if (stabilityValue == 1) {
+                                peerService.updateSI(webSocket, 1);
+                            } else {
+                                peerService.updateSI(webSocket, stabilityValue / 2);
+                                stabilityValue /= 2;
+                            }
                             vacks.add(tempVACK);
                             if (vacks.size() >= 2 * N) {
                                 viewState = ViewState.WritingBlock;
@@ -497,11 +507,13 @@ public class P2PService implements ISubscriber {
     public void doPerHour01() {
 //        System.out.println("进入01,此时VN=" + VN);
         this.viewState = ViewState.Running;
-        VN++;
+        VN = (VN + 1) % 65535;
         acks.clear();
         vacks.clear();
         startTime = 0;
         endTime = 0;
+        stabilityValue=128;
+        peerService.updateDelay();
     }
 
     class HandleMsgThread extends Thread {

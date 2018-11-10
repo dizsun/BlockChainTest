@@ -1,6 +1,6 @@
 package com.dizsun.util;
 
-import com.dizsun.block.Block;
+import com.dizsun.component.Block;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -8,6 +8,7 @@ import java.util.List;
 
 public class SQLUtil {
     private static String Drivder ="org.sqlite.JDBC";
+    private static String url="jdbc:sqlite:./db/blocks.db";
 
     //测试数据库代码
 //    public static void main(String[] args) {
@@ -41,7 +42,7 @@ public class SQLUtil {
         List<Block> dbBlocks=new ArrayList<Block>();
         try {
             Class.forName(Drivder);// 加载驱动,连接sqlite的jdbc
-            Connection connection= DriverManager.getConnection("jdbc:sqlite:db/blocks.db");//连接数据库zhou.db,不存在则创建
+            Connection connection= DriverManager.getConnection(url);//连接数据库zhou.db,不存在则创建
             Statement statement=connection.createStatement();   //创建连接对象，是Java的一个操作数据库的重要接口
             ResultSet rSet=statement.executeQuery("select * from blocks");//搜索数据库，将搜索的放入数据集ResultSet中
             while (rSet.next()) {
@@ -73,7 +74,7 @@ public class SQLUtil {
     public void initBlocks(List<Block> blockChain) {
         try {
             Class.forName(Drivder);// 加载驱动,连接sqlite的jdbc
-            Connection connection= DriverManager.getConnection("jdbc:sqlite:db/blocks.db");//连接数据库,不存在则创建
+            Connection connection= DriverManager.getConnection(url);//连接数据库,不存在则创建
             Statement statement=connection.createStatement();   //创建连接对象，是Java的一个操作数据库的重要接口
 //            String sql="create table blocks( `id` INTEGER PRIMARY KEY   AUTOINCREMENT,`index` INT NOT NULL," +
 //                    "`previousHash` VARCHAR(1024) NOT NULL,`timestamp` TIMESTAMP NOT NULL," +
@@ -103,7 +104,7 @@ public class SQLUtil {
     public void addBlock(Block newBlock) {
         try {
             Class.forName(Drivder);// 加载驱动,连接sqlite的jdbc
-            Connection connection= DriverManager.getConnection("jdbc:sqlite:db/blocks.db");//连接数据库zhou.db,不存在则创建
+            Connection connection= DriverManager.getConnection(url);//连接数据库zhou.db,不存在则创建
             Statement statement=connection.createStatement();   //创建连接对象，是Java的一个操作数据库的重要接口
             String blockSQL=String.format("INSERT INTO blocks VALUES(%d,'%s',%d,'%s','%s',%d)",newBlock.getIndex(),newBlock.getPreviousHash()
                     ,newBlock.getTimestamp(),newBlock.getData(),newBlock.getHash(),newBlock.getProof());

@@ -31,6 +31,8 @@ public class Main {
         }
         if (args != null && args.length == 2) {
             try {
+                NTPService ntpService = new NTPService();
+                ntpService.start();
                 Broadcaster broadcaster = new Broadcaster();
                 int httpPort = Integer.valueOf(args[0]);
                 int p2pPort = Integer.valueOf(args[1]);
