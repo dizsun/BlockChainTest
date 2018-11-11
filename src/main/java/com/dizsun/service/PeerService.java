@@ -222,7 +222,7 @@ public class PeerService implements ICheckDelay{
                 }
                 delay=(t2-t1)/2.0;
                 context.checkDelay(peer,delay);
-                LogUtil.writeConsensusLog(""+delay,LogUtil.NTP);
+                LogUtil.writeLog(""+delay,LogUtil.NTP);
                 dis.close();
                 dos.close();
                 client.close();

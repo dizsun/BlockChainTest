@@ -245,7 +245,7 @@ public class P2PService implements ISubscriber {
                                 viewState = ViewState.Running;
                                 endTime = System.nanoTime() - startTime;
                                 System.out.println("[P2PService][handleMessage]Consensus duration:" + endTime / 1000000000.0 + "s");
-                                LogUtil.writeConsensusLog("" + endTime, LogUtil.CONSENSUS);
+                                LogUtil.writeLog("" + endTime, LogUtil.CONSENSUS);
                             }
                         }
                     }
@@ -267,7 +267,7 @@ public class P2PService implements ISubscriber {
                             viewState = ViewState.Running;
                             endTime = System.nanoTime() - startTime;
                             System.out.println("[P2PService][handleMessage]Consensus duration:" + endTime / 1000000000.0 + "s");
-                            LogUtil.writeConsensusLog("" + endTime, LogUtil.CONSENSUS);
+                            LogUtil.writeLog("" + endTime, LogUtil.CONSENSUS);
                             break;
 
                     }
