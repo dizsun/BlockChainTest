@@ -67,7 +67,7 @@ public class PeerService implements ICheckDelay{
     }
 
     public void write(WebSocket webSocket, String msg) {
-        if (webSocket != null && webSocket.isConnecting())
+        if (webSocket != null && webSocket.isOpen())
             webSocket.send(msg);
     }
 
@@ -99,12 +99,12 @@ public class PeerService implements ICheckDelay{
             final WebSocketClient socket = new WebSocketClient(new URI(host)) {
                 @Override
                 public void onOpen(ServerHandshake serverHandshake) {
-                    write(this, p2PService.queryChainLengthMsg());
-                    write(this, p2PService.queryAllPeers());
-                    write(this, p2PService.queryAllVMsg());
                     if(!addPeer(this)){
                         this.close();
                     }
+                    write(this, p2PService.queryChainLengthMsg());
+                    write(this, p2PService.queryAllPeers());
+                    write(this, p2PService.queryAllVMsg());
                 }
 
                 @Override
@@ -115,19 +115,19 @@ public class PeerService implements ICheckDelay{
 
                 @Override
                 public void onClose(int i, String s, boolean b) {
-                    System.out.println("connection failed");
+                    System.out.println("[PeerService][connectToPeer]connection failed");
                     removePeer(this);
                 }
 
                 @Override
                 public void onError(Exception e) {
-                    System.out.println("connection failed");
+                    System.out.println("[PeerService][connectToPeer]connection failed");
                     removePeer(this);
                 }
             };
             socket.connect();
         } catch (URISyntaxException e) {
-            System.out.println("p2p connect is error:" + e.getMessage());
+            System.out.println("[PeerService][connectToPeer]p2p connect is error:" + e.getMessage());
         }
 
     }
