@@ -16,7 +16,7 @@ public class LogUtil {
         }
         try {
             FileWriter fw  =new FileWriter(file.getName(),true);
-            fw.write(msg);
+            fw.write(msg+"\n");
             fw.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

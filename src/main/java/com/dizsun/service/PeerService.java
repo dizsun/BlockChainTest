@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -215,14 +216,14 @@ public class PeerService implements ICheckDelay{
                 DataOutputStream dos = new DataOutputStream(client.getOutputStream());
                 DataInputStream dis = new DataInputStream(client.getInputStream());
                 dos.writeBoolean(true);
-                t1=System.currentTimeMillis();
+                t1=new Date().getTime();
                 dos.flush();
                 if(dis.readBoolean()){
-                    t2=System.currentTimeMillis();
+                    t2=new Date().getTime();
                 }
                 delay=(t2-t1)/2.0;
                 context.checkDelay(peer,delay);
-                LogUtil.writeLog(""+delay,LogUtil.NTP);
+                LogUtil.writeLog(peer.getIp()+":"+delay,LogUtil.NTP);
                 dis.close();
                 dos.close();
                 client.close();
