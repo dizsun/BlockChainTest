@@ -15,15 +15,16 @@ public class BlockService {
     private BlockService() {
 //        this.sqlUtil=new SQLUtil();
         this.blockChain = new ArrayList<Block>();
+        blockChain.add(this.getFirstBlock());
 
 //        List<Block> dbBlocks = sqlUtil.queryBlocks();
-        List<Block> dbBlocks = new ArrayList<>();
-        if(dbBlocks==null){
-            blockChain.add(this.getFirstBlock());
+//        List<Block> dbBlocks = new ArrayList<>();
+//        if(dbBlocks==null){
+//            blockChain.add(this.getFirstBlock());
 //            sqlUtil.initBlocks(blockChain);
-        }else{
-            blockChain=dbBlocks;
-        }
+//        }else{
+//            blockChain=dbBlocks;
+//        }
     }
     public static BlockService newBlockService(){
         if(blockService==null){
@@ -52,7 +53,7 @@ public class BlockService {
     }
 
     private Block getFirstBlock() {
-        return new Block(1, "0", 0, "Hello Block", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a",100);
+        return new Block(1, "0", 0, "Hello Block", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a",0);
     }
 
     /**
@@ -60,13 +61,13 @@ public class BlockService {
      * @param blockData
      * @return
      */
-    public Block generateNextBlock(String blockData) {
+    public Block generateNextBlock(String blockData,int VN) {
         Block previousBlock = this.getLatestBlock();
         int nextIndex = previousBlock.getIndex() + 1;
         long nextTimestamp = System.currentTimeMillis();
         String nextHash = calculateHash(nextIndex, previousBlock.getHash(), nextTimestamp, blockData);
         //int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
-        return new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash);
+        return new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash,VN);
     }
 
     public void addBlock(Block newBlock) {
@@ -94,10 +95,6 @@ public class BlockService {
                     newBlock.getData());
             if (!hash.equals(newBlock.getHash())) {
                 System.out.println("无效的 hash: " + hash + " " + newBlock.getHash());
-                return false;
-            }
-            if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash())) {
-                System.out.println("无效的证明:"+newBlock.getProof());
                 return false;
             }
         }

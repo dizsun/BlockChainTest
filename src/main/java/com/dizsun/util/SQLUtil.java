@@ -53,7 +53,7 @@ public class SQLUtil {
                 block.setTimestamp(timestamp.getTime());
                 block.setData(rSet.getString("data"));
                 block.setHash(rSet.getString("hash"));
-                block.setProof(rSet.getInt("proof"));
+//                block.setProof(rSet.getInt("proof"));
                 dbBlocks.add(block);
             }
             rSet.close();//关闭数据集
@@ -81,13 +81,13 @@ public class SQLUtil {
 //                    "`data` VARCHAR(1024) NOT NULL,`hash` VARCHAR(1024) NOT NULL,`proof` INT NOT NULL)";
             String sql="create table blocks(`index` INT PRIMARY KEY NOT NULL," +
                     "`previousHash` VARCHAR(1024) NOT NULL,`timestamp` TIMESTAMP NOT NULL," +
-                    "`data` VARCHAR(1024) NOT NULL,`hash` VARCHAR(1024) NOT NULL,`proof` INT NOT NULL)";
+                    "`data` VARCHAR(1024) NOT NULL,`hash` VARCHAR(1024) NOT NULL,`vn` INT NOT NULL)";
             statement.executeUpdate("drop table if exists blocks");//判断是否有表的存在。有则删除
             statement.executeUpdate(sql);            //创建数据库
             if(blockChain!=null) {
                 Block block = blockChain.get(0);
                 String blockSQL = String.format("INSERT INTO blocks VALUES(%d,'%s',%d,'%s','%s',%d)", block.getIndex(), block.getPreviousHash()
-                        , block.getTimestamp(), block.getData(), block.getHash(), block.getProof());
+                        , block.getTimestamp(), block.getData(), block.getHash(),block.getVN());
                 statement.executeUpdate(blockSQL);//向数据库中插入数据
             }
             connection.close();//关闭数据库连接
@@ -107,7 +107,7 @@ public class SQLUtil {
             Connection connection= DriverManager.getConnection(url);//连接数据库zhou.db,不存在则创建
             Statement statement=connection.createStatement();   //创建连接对象，是Java的一个操作数据库的重要接口
             String blockSQL=String.format("INSERT INTO blocks VALUES(%d,'%s',%d,'%s','%s',%d)",newBlock.getIndex(),newBlock.getPreviousHash()
-                    ,newBlock.getTimestamp(),newBlock.getData(),newBlock.getHash(),newBlock.getProof());
+                    ,newBlock.getTimestamp(),newBlock.getData(),newBlock.getHash(),newBlock.getVN());
             statement.executeUpdate(blockSQL);//向数据库中插入数据
             connection.close();//关闭数据库连接
         } catch (Exception e) {

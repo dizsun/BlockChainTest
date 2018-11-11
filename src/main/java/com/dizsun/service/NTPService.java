@@ -1,5 +1,7 @@
 package com.dizsun.service;
 
+import com.dizsun.util.Config;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,7 +13,7 @@ public class NTPService extends Thread {
     @Override
     public void run() {
         try {
-            serverSocket = new ServerSocket(9500);
+            serverSocket = new ServerSocket(Config.NTPPORT);
             while(true){
                 try{
                     Socket inSocket = serverSocket.accept();

@@ -19,7 +19,7 @@ public class DateUtil {
     private static DateUtil dateUtil;
 
     private DateUtil() {
-        host="10.37.129.2";
+        host=Config.TCIP;
     }
 
     public static DateUtil newDataUtil(){
@@ -44,7 +44,7 @@ public class DateUtil {
     public String getTimeFromRC(){
         time="-1";
         try {
-            Socket socket=new Socket(host,65001);
+            Socket socket=new Socket(host,Config.TCPORT);
             DataInputStream dis = new DataInputStream(socket.getInputStream());
             time=""+dis.readLong();
             socket.close();

@@ -6,7 +6,7 @@ public class Block {
     private long timestamp;
     private String data;
     private String hash;
-    private int proof;
+    private int VN;
 
     public Block() {
     }
@@ -19,13 +19,13 @@ public class Block {
 //        this.hash = hash;
 //    }
 
-    public Block(int index, String previousHash, long timestamp, String data, String hash, int proof) {
+    public Block(int index, String previousHash, long timestamp, String data, String hash, int VN) {
         this.index = index;
         this.previousHash = previousHash;
         this.timestamp = timestamp;
         this.data = data;
         this.hash = hash;
-        this.proof = proof;
+        this.VN=VN;
     }
     public Block(int index, String previousHash, long timestamp, String data, String hash) {
         this.index = index;
@@ -33,7 +33,6 @@ public class Block {
         this.timestamp = timestamp;
         this.data = data;
         this.hash = hash;
-        this.proof=0;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class Block {
                 ", timestamp=" + timestamp +
                 ", data='" + data + '\'' +
                 ", hash='" + hash + '\'' +
-                ", proof=" + proof +
+                ", VN=" + VN +
                 '}';
     }
 
@@ -96,11 +95,12 @@ public class Block {
         this.hash = hash;
     }
 
-    public int getProof() {
-        return proof;
+
+    public int getVN() {
+        return VN;
     }
 
-    public void setProof(int proof) {
-        this.proof = proof;
+    public void setVN(int VN) {
+        this.VN = VN;
     }
 }

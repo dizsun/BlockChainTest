@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.dizsun.component.*;
 import com.dizsun.util.DateUtil;
 import com.dizsun.util.ISubscriber;
+import com.dizsun.util.LogUtil;
 import com.dizsun.util.RSAUtil;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -135,14 +136,14 @@ public class P2PService implements ISubscriber {
 //                    System.out.println("对方请求所以block...");
                     peerService.write(webSocket, responseChainMsg());
                     synchronized (blockLock) {
-                        handleBlockChainResponse(message.getData());
+                        handleBlockChainResponse(webSocket,message.getData());
                     }
                     break;
                 case QUERY_ALL_VBLOCKS:
 //                    System.out.println("对方请求所有vblock...");
                     peerService.write(webSocket, responseVChainMsg());
                     synchronized (vBlockLock) {
-                        handleVBlockChainResponse(message.getData());
+                        handleVBlockChainResponse(webSocket,message.getData());
                     }
 //                    System.out.println("VChain length:" + vBlockService.getBlockChain().size());
                     break;
@@ -156,13 +157,13 @@ public class P2PService implements ISubscriber {
                 case RESPONSE_BLOCKCHAIN:
 //                    System.out.println("收到blocks...");
                     synchronized (blockLock) {
-                        handleBlockChainResponse(message.getData());
+                        handleBlockChainResponse(webSocket,message.getData());
                     }
                     break;
                 case RESPONSE_VBLOCKCHAIN:
 //                    System.out.println("收到vblocks...");
                     synchronized (vBlockLock) {
-                        handleVBlockChainResponse(message.getData());
+                        handleVBlockChainResponse(webSocket,message.getData());
                     }
                     break;
                 case RESPONSE_ALL_PEERS:
@@ -218,7 +219,7 @@ public class P2PService implements ISubscriber {
                         case WatingNegotiation:
                             stopWriteVBlock();
                             synchronized (vBlockLock) {
-                                handleVBlockChainResponse(message.getData());
+                                handleVBlockChainResponse(webSocket,message.getData());
                             }
                             viewState = ViewState.WaitingBlock;
                             peerService.write(webSocket, responseVACK());
@@ -244,6 +245,7 @@ public class P2PService implements ISubscriber {
                                 viewState = ViewState.Running;
                                 endTime = System.nanoTime() - startTime;
                                 System.out.println("Consensus duration:" + endTime / 1000000000.0 + "s");
+                                LogUtil.writeConsensusLog(""+endTime,LogUtil.CONSENSUS);
                             }
                         }
                     }
@@ -260,11 +262,12 @@ public class P2PService implements ISubscriber {
                         case WatingNegotiation:
                         case WaitingVACK:
                             synchronized (blockLock) {
-                                handleBlockChainResponse(message.getData());
+                                handleBlockChainResponse(webSocket,message.getData());
                             }
                             viewState = ViewState.Running;
                             endTime = System.nanoTime() - startTime;
                             System.out.println("Consensus duration:" + endTime / 1000000000.0 + "s");
+                            LogUtil.writeConsensusLog(""+endTime,LogUtil.CONSENSUS);
                             break;
 
                     }
@@ -291,7 +294,7 @@ public class P2PService implements ISubscriber {
     }
 
     private void writeBlock() {
-        blockService.addBlock(blockService.generateNextBlock(dateUtil.getTimeFromRC()));
+        blockService.addBlock(blockService.generateNextBlock(dateUtil.getTimeFromRC(),VN));
     }
 
     //TODO 写入虚区块,要验证合法性,即区块必须包含所有同意的ACK
@@ -310,7 +313,7 @@ public class P2PService implements ISubscriber {
      *
      * @param message
      */
-    private void handleBlockChainResponse(String message) {
+    private void handleBlockChainResponse(WebSocket ws,String message) {
         List<Block> receiveBlocks = JSON.parseArray(message, Block.class);
         Collections.sort(receiveBlocks, new Comparator<Block>() {
             public int compare(Block o1, Block o2) {
@@ -324,12 +327,13 @@ public class P2PService implements ISubscriber {
             if (latestBlock.getHash().equals(latestBlockReceived.getPreviousHash())) {
                 System.out.println("We can append the received block to our chain");
                 blockService.addBlock(latestBlockReceived);
-                peerService.broadcast(responseLatestMsg());
+                peerService.write(ws,responseLatestMsg());
             } else if (receiveBlocks.size() == 1) {
                 System.out.println("We have to query the chain from our peer");
-                peerService.broadcast(queryAllMsg());
+                peerService.write(ws,queryAllMsg());
             } else {
                 blockService.replaceChain(receiveBlocks);
+                this.VN=receiveBlocks.get(receiveBlocks.size() - 1).getVN();
             }
         } else {
             System.out.println("received blockchain is not longer than received blockchain. Do nothing");
@@ -341,7 +345,7 @@ public class P2PService implements ISubscriber {
      *
      * @param message
      */
-    private void handleVBlockChainResponse(String message) {
+    private void handleVBlockChainResponse(WebSocket ws,String message) {
         List<VBlock> receiveBlocks = JSON.parseArray(message, VBlock.class);
         Collections.sort(receiveBlocks, new Comparator<VBlock>() {
             public int compare(VBlock o1, VBlock o2) {
@@ -357,12 +361,13 @@ public class P2PService implements ISubscriber {
             if (latestBlock.getHash().equals(latestBlockReceived.getPreviousHash())) {
                 System.out.println("We can append the received vblock to our vchain");
                 vBlockService.addBlock(latestBlockReceived);
-                peerService.broadcast(responseLatestVMsg());
+                peerService.write(ws,responseLatestVMsg());
             } else if (receiveBlocks.size() == 1) {
                 System.out.println("We have to query the vchain from our peer");
-                peerService.broadcast(queryAllVMsg());
+                peerService.write(ws,queryAllVMsg());
             } else {
                 vBlockService.replaceChain(receiveBlocks);
+                this.VN=receiveBlocks.get(receiveBlocks.size() - 1).getViewNumber();
             }
         } else {
             System.out.println("received vblockchain is not longer than received vblockchain. Do nothing");
@@ -530,5 +535,8 @@ public class P2PService implements ISubscriber {
             handleMessage(ws, s);
         }
 
+    }
+    public void connect(String ip){
+        this.peerService.connectToPeer(ip);
     }
 }

@@ -4,31 +4,33 @@ import com.dizsun.util.*;
 import com.dizsun.service.*;
 
 import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Main {
     private static String Drivder = "org.sqlite.JDBC";
     public static void main(String[] args) {
-        File dbFileFolder = new File("./db");
-        if(!dbFileFolder.exists()){
-            System.out.println("db文件夹不存在!");
-            if(dbFileFolder.mkdir()){
-                System.out.println("db文件夹创建成功!");
-            }else {
-                System.out.println("db文件夹创建失败!");
-                return;
-            }
-        }
-        File dbFile = new File("./db/blocks.db");
-        if(!dbFile.exists()){
-            System.out.println("db文件不存在!");
-            try {
-                SQLUtil sqlUtil=new SQLUtil();
-                sqlUtil.initBlocks(null);
-                System.out.println("db文件创建成功!");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        File dbFileFolder = new File("./db");
+//        if(!dbFileFolder.exists()){
+//            System.out.println("db文件夹不存在!");
+//            if(dbFileFolder.mkdir()){
+//                System.out.println("db文件夹创建成功!");
+//            }else {
+//                System.out.println("db文件夹创建失败!");
+//                return;
+//            }
+//        }
+//        File dbFile = new File("./db/blocks.db");
+//        if(!dbFile.exists()){
+//            System.out.println("db文件不存在!");
+//            try {
+//                SQLUtil sqlUtil=new SQLUtil();
+//                sqlUtil.initBlocks(null);
+//                System.out.println("db文件创建成功!");
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
         if (args != null && args.length == 2) {
             try {
                 NTPService ntpService = new NTPService();
@@ -41,6 +43,12 @@ public class Main {
                 p2pService.initP2PServer(p2pPort);
                 HTTPService httpService = new HTTPService(p2pService);
                 broadcaster.broadcast();
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        p2pService.connect(Config.MAINHOST);
+                    }
+                },5000);
                 httpService.initHTTPServer(httpPort);
             } catch (Exception e) {
                 System.out.println("startup is error:" + e.getMessage());

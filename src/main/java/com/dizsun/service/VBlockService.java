@@ -43,7 +43,7 @@ public class VBlockService {
     }
 
     private VBlock getFirstBlock() {
-        return new VBlock(1, "0", 0,0, "Hello VBlock", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a",100);
+        return new VBlock(1, "0", 0,0, "Hello VBlock", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a");
     }
 
     /**
@@ -56,8 +56,8 @@ public class VBlockService {
         int nextIndex = previousBlock.getIndex() + 1;
         long nextTimestamp = System.currentTimeMillis();
         String nextHash = calculateHash(nextIndex, previousBlock.getHash(), nextTimestamp, blockData);
-        int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
-        return new VBlock(nextIndex, previousBlock.getHash(), nextTimestamp,viewNumber, blockData, nextHash,proof);
+//        int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
+        return new VBlock(nextIndex, previousBlock.getHash(), nextTimestamp,viewNumber, blockData, nextHash);
     }
 
     public void addBlock(VBlock newBlock) {
@@ -87,10 +87,10 @@ public class VBlockService {
                 System.out.println("无效的 hash: " + hash + " " + newBlock.getHash() + "of vBlock");
                 return false;
             }
-            if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash())) {
-                System.out.println("无效的证明:"+newBlock.getProof() + "of vBlock");
-                return false;
-            }
+//            if(!isValidProof(previousBlock.getProof(),newBlock.getProof(),previousBlock.getHash())) {
+//                System.out.println("无效的证明:"+newBlock.getProof() + "of vBlock");
+//                return false;
+//            }
         }
         return true;
     }

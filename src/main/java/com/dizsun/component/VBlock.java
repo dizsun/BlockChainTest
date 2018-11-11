@@ -7,19 +7,17 @@ public class VBlock {
     private int viewNumber;
     private String data;
     private String hash;
-    private int proof;
 
     public VBlock() {
     }
 
-    public VBlock(int index, String previousHash, long timestamp, int viewNumber, String data, String hash, int proof) {
+    public VBlock(int index, String previousHash, long timestamp, int viewNumber, String data, String hash) {
         this.index = index;
         this.previousHash = previousHash;
         this.timestamp = timestamp;
         this.viewNumber = viewNumber;
         this.data = data;
         this.hash = hash;
-        this.proof = proof;
     }
 
     @Override
@@ -38,7 +36,6 @@ public class VBlock {
                 ", timestamp=" + timestamp +
                 ", data='" + data + '\'' +
                 ", hash='" + hash + '\'' +
-                ", proof=" + proof +
                 '}';
     }
 
@@ -90,11 +87,4 @@ public class VBlock {
         this.hash = hash;
     }
 
-    public int getProof() {
-        return proof;
-    }
-
-    public void setProof(int proof) {
-        this.proof = proof;
-    }
 }

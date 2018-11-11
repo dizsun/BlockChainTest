@@ -2,6 +2,7 @@ package com.dizsun.service;
 
 import com.dizsun.component.Peer;
 import com.dizsun.util.ICheckDelay;
+import com.dizsun.util.LogUtil;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -43,7 +44,7 @@ public class PeerService implements ICheckDelay{
         return peerService;
     }
 
-    public void addPeer(WebSocket webSocket) {
+    public boolean addPeer(WebSocket webSocket) {
         String host = webSocket.getRemoteSocketAddress().getHostString();
         localHost = webSocket.getLocalSocketAddress().getHostString();
         if (!contains(host) && !host.equals(localHost)) {
@@ -51,7 +52,9 @@ public class PeerService implements ICheckDelay{
             p.setWebSocket(webSocket);
             p.setIp(host);
             peers.add(p);
+            return true;
         }
+        return false;
     }
 
     public void removePeer(WebSocket webSocket) {
@@ -64,7 +67,7 @@ public class PeerService implements ICheckDelay{
     }
 
     public void write(WebSocket webSocket, String msg) {
-        if (webSocket != null)
+        if (webSocket != null && webSocket.isConnecting())
             webSocket.send(msg);
     }
 
@@ -88,7 +91,7 @@ public class PeerService implements ICheckDelay{
      */
     public void connectToPeer(String host) {
         if (isIP(host)) {
-            if (peers.contains(host) || host.equals(localHost))
+            if (contains(host) || host.equals(localHost))
                 return;
             host = "http://" + host + ":6001";
         }
@@ -99,7 +102,9 @@ public class PeerService implements ICheckDelay{
                     write(this, p2PService.queryChainLengthMsg());
                     write(this, p2PService.queryAllPeers());
                     write(this, p2PService.queryAllVMsg());
-                    addPeer(this);
+                    if(!addPeer(this)){
+                        this.close();
+                    }
                 }
 
                 @Override
@@ -217,6 +222,7 @@ public class PeerService implements ICheckDelay{
                 }
                 delay=(t2-t1)/2.0;
                 context.checkDelay(peer,delay);
+                LogUtil.writeConsensusLog(""+delay,LogUtil.NTP);
                 dis.close();
                 dos.close();
                 client.close();
