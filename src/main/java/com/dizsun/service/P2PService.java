@@ -336,7 +336,7 @@ public class P2PService implements ISubscriber {
                 peerService.write(ws, queryAllMsg());
             } else {
                 blockService.replaceChain(receiveBlocks);
-                this.VN = receiveBlocks.get(receiveBlocks.size() - 1).getVN();
+//                this.VN = receiveBlocks.get(receiveBlocks.size() - 1).getVN();
             }
         } else {
             System.out.println("[P2PService][handleBlockChainResponse]Received blockchain is not longer than received blockchain. Do nothing");
@@ -370,7 +370,7 @@ public class P2PService implements ISubscriber {
                 peerService.write(ws, queryAllVMsg());
             } else {
                 vBlockService.replaceChain(receiveBlocks);
-                this.VN = receiveBlocks.get(receiveBlocks.size() - 1).getViewNumber();
+//                this.VN = receiveBlocks.get(receiveBlocks.size() - 1).getViewNumber();
             }
         } else {
             System.out.println("[P2PService][handleVBlockChainResponse]received vblockchain is not longer than received vblockchain. Do nothing");
