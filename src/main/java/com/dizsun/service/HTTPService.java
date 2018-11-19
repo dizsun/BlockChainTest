@@ -22,13 +22,11 @@ import java.net.InetSocketAddress;
  */
 public class HTTPService {
     private BlockService blockService;
-    private VBlockService vBlockService;
     private P2PService   p2pService;
     private PeerService peerService;
 
     public HTTPService(P2PService p2pService) {
         this.blockService = BlockService.newBlockService();
-        this.vBlockService= VBlockService.newVBlockService();
         this.p2pService = p2pService;
         this.peerService=PeerService.newPeerService(p2pService);
     }
@@ -41,7 +39,6 @@ public class HTTPService {
             context.setContextPath("/");
             server.setHandler(context);
             context.addServlet(new ServletHolder(new BlocksServlet()), "/blocks");
-            context.addServlet(new ServletHolder(new VBlockServlet()), "/vblocks");
 //            context.addServlet(new ServletHolder(new MineBlockServlet()), "/mineBlock");
             context.addServlet(new ServletHolder(new PeersServlet()), "/peers");
             context.addServlet(new ServletHolder(new AddPeerServlet()), "/addPeer");
@@ -59,14 +56,6 @@ public class HTTPService {
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().println(JSON.toJSONString(blockService.getBlockChain()));
-        }
-    }
-
-    private class VBlockServlet extends HttpServlet{
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            resp.setCharacterEncoding("UTF-8");
-            resp.getWriter().println(JSON.toJSONString(vBlockService.getBlockChain()));
         }
     }
 

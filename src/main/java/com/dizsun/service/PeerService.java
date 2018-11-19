@@ -1,6 +1,7 @@
 package com.dizsun.service;
 
 import com.dizsun.component.Peer;
+import com.dizsun.util.Config;
 import com.dizsun.util.ICheckDelay;
 import com.dizsun.util.LogUtil;
 import org.java_websocket.WebSocket;
@@ -105,7 +106,6 @@ public class PeerService implements ICheckDelay{
                     }
                     write(this, p2PService.queryChainLengthMsg());
                     write(this, p2PService.queryAllPeers());
-                    write(this, p2PService.queryAllVMsg());
                 }
 
                 @Override
@@ -212,14 +212,14 @@ public class PeerService implements ICheckDelay{
         @Override
         public void run() {
             try {
-                Socket client = new Socket(InetAddress.getByName(peer.getIp()),9500);
+                Socket client = new Socket(InetAddress.getByName(peer.getIp()), Config.NTPPORT);
                 DataOutputStream dos = new DataOutputStream(client.getOutputStream());
                 DataInputStream dis = new DataInputStream(client.getInputStream());
                 dos.writeBoolean(true);
-                t1=new Date().getTime();
+                t1=System.nanoTime();
                 dos.flush();
                 if(dis.readBoolean()){
-                    t2=new Date().getTime();
+                    t2=System.nanoTime();
                 }
                 delay=(t2-t1)/2.0;
                 context.checkDelay(peer,delay);

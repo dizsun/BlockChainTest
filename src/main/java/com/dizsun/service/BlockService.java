@@ -1,5 +1,7 @@
 package com.dizsun.service;
 
+import com.alibaba.fastjson.JSON;
+import com.dizsun.component.ACK;
 import com.dizsun.component.Block;
 import com.dizsun.util.CryptoUtil;
 //import com.dizsun.util.SQLUtil;
@@ -158,6 +160,16 @@ public class BlockService {
         while (!isValidProof(lastProof,proof,previousHash))
             proof++;
         return proof;
+    }
+
+    public void rollback(){
+        if(this.blockChain.size()>0){
+            this.blockChain.remove(this.blockChain.size()-1);
+        }
+    }
+
+    public String getJSONData(List<ACK> acks){
+        return JSON.toJSONString(acks);
     }
 
     public List<Block> getBlockChain() {
