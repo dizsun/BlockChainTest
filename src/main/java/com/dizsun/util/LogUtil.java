@@ -3,8 +3,12 @@ package com.dizsun.util;
 import java.io.*;
 
 public class LogUtil {
-    public static final String CONSENSUS = "consensus.txt";
-    public static final String NTP = "ntp.txt";
+    public static String CONSENSUS = "consensus";
+    public static String NTP = "ntp";
+    public static void init(String path,String index){
+        LogUtil.CONSENSUS = path+"consensus_" + index + ".txt";
+        LogUtil.NTP = path+"ntp_" + index + ".txt";
+    }
     public static void writeLog(String msg, String fileName){
         File file = new File(fileName);
         if(!file.exists()) {
@@ -15,9 +19,11 @@ public class LogUtil {
             }
         }
         try {
-            FileWriter fw  =new FileWriter(file.getName(),true);
-            fw.write(msg+"\n");
-            fw.close();
+            FileOutputStream out = new FileOutputStream(file, true);
+            StringBuffer sb = new StringBuffer();
+            sb.append(msg+"\n");
+            out.write(sb.toString().getBytes("utf-8"));
+            out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

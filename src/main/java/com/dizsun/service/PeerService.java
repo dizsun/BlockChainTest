@@ -202,7 +202,7 @@ public class PeerService implements ICheckDelay{
         private Peer peer;
         private long t1;
         private long t2;
-        private double delay;
+        private Double delay;
 
         public DelayHandler(ICheckDelay context, Peer peer) {
             this.context = context;
@@ -223,7 +223,7 @@ public class PeerService implements ICheckDelay{
                 }
                 delay=(t2-t1)/2.0;
                 context.checkDelay(peer,delay);
-                LogUtil.writeLog(peer.getIp()+":"+delay,LogUtil.NTP);
+                LogUtil.writeLog(peer.getIp()+":"+delay.intValue(),LogUtil.NTP);
                 dis.close();
                 dos.close();
                 client.close();

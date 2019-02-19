@@ -7,6 +7,4 @@ public class Config {
     public static final int NTPPORT=9500;
     //时间中心的端口
     public static final int TCPORT=65001;
-    //启动是首先连接的节点地址
-    public static final String MAINHOST="192.168.123.154";
 }

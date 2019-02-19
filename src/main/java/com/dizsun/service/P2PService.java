@@ -24,7 +24,7 @@ public class P2PService implements ISubscriber {
     private BlockService blockService;
     private ExecutorService pool;   //线程池
     private final Object ackLock = new Object();  //接收ack的线程锁
-    private final Object vackLock = new Object();  //接收vack的线程锁
+//    private final Object vackLock = new Object();  //接收vack的线程锁
     private final Object mBlockLock = new Object();  //写vblock的线程锁
     private final Object blockLock = new Object();  //写block的线程锁
     private final Object peerLock = new Object();  //写peer的线程锁
@@ -145,7 +145,7 @@ public class P2PService implements ISubscriber {
                     }
                     break;
                 case REQUEST_NEGOTIATION:
-                    System.out.println("[P2PService][handleMessage]收到协商请求...");
+                    System.out.println("[P2PService][handleMessage]receive negotiation request...");
                     N = (peerService.length() + 1) / 3;
 //                    System.out.println("N的大小:" + N);
                     if (viewState == ViewState.WaitingNegotiation) {

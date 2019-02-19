@@ -9,7 +9,79 @@ import java.util.TimerTask;
 
 public class Main {
     private static String Drivder = "org.sqlite.JDBC";
-    public static void main(String[] args) {
+    private static String path = "/info/";
+
+        public static void main(String[] args) {
+
+        if (args != null && args.length == 3) {
+            try {
+                String index = args[2];
+                LogUtil.init(path,index);
+                String mainHost=getMainHost();
+
+                NTPService ntpService = new NTPService();
+                ntpService.start();
+                Broadcaster broadcaster = new Broadcaster();
+                int httpPort = Integer.valueOf(args[0]);
+                int p2pPort = Integer.valueOf(args[1]);
+                P2PService p2pService = new P2PService();
+                broadcaster.subscribe(p2pService);
+                p2pService.initP2PServer(p2pPort);
+                HTTPService httpService = new HTTPService(p2pService);
+                broadcaster.broadcast();
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        p2pService.connect(mainHost);
+                    }
+                }, 5000);
+                httpService.initHTTPServer(httpPort);
+            } catch (Exception e) {
+                System.out.println("startup is error:" + e.getMessage());
+            }
+        } else {
+            System.out.println("usage: java -jar blockchainTest.jar 9000 6001 254");
+        }
+    }
+    public static String getMainHost() {
+        String res = "0.0.0.0";
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(path + "config.txt"));
+            String str = bufferedReader.readLine();
+            res = str.split("=")[1];
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+//    public static void main(String[] args) {
+//        File file = new File("/info/test.txt");
+//        if (!file.exists()) {
+//            try {
+//                file.createNewFile();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        try {
+//            FileOutputStream out = new FileOutputStream(file, true);
+//            StringBuffer sb = new StringBuffer();
+//            sb.append("test infomation");
+//            out.write(sb.toString().getBytes("utf-8"));
+//            out.close();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+}
+
+
 //        File dbFileFolder = new File("./db");
 //        if(!dbFileFolder.exists()){
 //            System.out.println("db文件夹不存在!");
@@ -31,35 +103,3 @@ public class Main {
 //                e.printStackTrace();
 //            }
 //        }
-        if (args != null && args.length == 2) {
-            try {
-                NTPService ntpService = new NTPService();
-                ntpService.start();
-                Broadcaster broadcaster = new Broadcaster();
-                int httpPort = Integer.valueOf(args[0]);
-                int p2pPort = Integer.valueOf(args[1]);
-                P2PService p2pService = new P2PService();
-                broadcaster.subscribe(p2pService);
-                p2pService.initP2PServer(p2pPort);
-                HTTPService httpService = new HTTPService(p2pService);
-                broadcaster.broadcast();
-                new Timer().schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        p2pService.connect(Config.MAINHOST);
-                    }
-                },5000);
-                httpService.initHTTPServer(httpPort);
-            } catch (Exception e) {
-                System.out.println("startup is error:" + e.getMessage());
-            }
-        } else {
-            System.out.println("usage: java -jar naivechain.jar 9000 6001");
-        }
-    }
-//    public static void main(String[] args) {
-//        DateUtil dateUtil=DateUtil.newDataUtil();
-//        System.out.println("main:"+dateUtil.getTimeFromRC());
-//    }
-
-}
